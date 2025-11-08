@@ -179,7 +179,7 @@ this.relayerWallet = new ethers.Wallet(
 
 ```bash
 cd app/
-node app.js
+node ./src/app.js
 ```
 
 ## End-to-End User Workflow

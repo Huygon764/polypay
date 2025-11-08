@@ -128,6 +128,7 @@ class PrivateTransferManager {
     );
 
     // wait to have enough time for relayer to submit on-chains
+    console.log("⏳ Finish submit proof. Waiting for relayer to submit on-chain...");
     await new Promise((resolve) => setTimeout(resolve, 40000)); // wait 40s
 
     console.log("🚀 Executing private transfer...");
@@ -187,8 +188,6 @@ async function main() {
     amountToSend,
     nonce
   );
-
-  console.log("🎉 Private transfer completed!");
 }
 
 main().catch(console.error);

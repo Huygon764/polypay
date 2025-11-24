@@ -18,7 +18,7 @@ This system allows users to transfer ETH privately by breaking the on-chain link
 └─────────────────────┘    Aggregation ID           └─────────────────────┘
            │                                                   │
            │                                                   │
-           │ 7. Call via Relayer                               │ 3. Aggregate &
+           │ 5. Call via Relayer                               │ 2. Aggregate &
            ▼                                                   │    Store Proofs
 ┌─────────────────────┐                                        │
 │                     │                                        ▼
@@ -27,12 +27,12 @@ This system allows users to transfer ETH privately by breaking the on-chain link
 │                     │                              │   zkVerify Chain    │
 └─────────────────────┘                              │  (Proof Registry)   │
            │                                         │                     │
-           │ 8. Submit Transaction                   └─────────────────────┘
+           │ 6. Submit Transaction                   └─────────────────────┘
            ▼                                                   │
-┌─────────────────────┐    5. Query Proof Status               │
+┌─────────────────────┐    8. Query Proof Status               │
 │                     │ ◀───────────────────────────────────── │
 │   Smart Contract    │                                        │
-│   (Privacy Pool)    │    6. Verify Aggregated Proof          │
+│   (Privacy Pool)    │    7. Verify Aggregated Proof          │
 │                     │ ──────────────────────────────────────▶│
 └─────────────────────┘                                        │
            │                                                   │
@@ -44,7 +44,7 @@ This system allows users to transfer ETH privately by breaking the on-chain link
 │                     │                                        │
 └─────────────────────┘                                        │
                                                                │
-┌─────────────────────┐    2. Submit & Wait                    │
+┌─────────────────────┐    3. Submit & Wait                    │
 │                     │ ───────────────────────────────────────┘
 │   Ethereum Chain    │
 │  (Settlement Layer) │

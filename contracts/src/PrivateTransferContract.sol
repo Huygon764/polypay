@@ -14,7 +14,7 @@ interface IVerifyProofAggregation {
 
 contract PrivateTransferContract {
     bytes32 public constant PROVING_SYSTEM_ID =
-        keccak256(abi.encodePacked("groth16"));
+        keccak256(abi.encodePacked("ultraplonk"));
     bytes32 public constant VERSION_HASH = sha256(abi.encodePacked(""));
 
     address public immutable zkvContract;
@@ -91,11 +91,7 @@ contract PrivateTransferContract {
         uint256 commitment,
         uint256 nullifier
     ) internal view returns (bool) {
-        // Encode public inputs
-        bytes memory encodedInputs = abi.encodePacked(
-            _changeEndianess(commitment),
-            _changeEndianess(nullifier)
-        );
+        bytes memory encodedInputs = abi.encodePacked(commitment, nullifier);
 
         // Calculate leaf hash
         bytes32 leaf = keccak256(
@@ -117,45 +113,5 @@ contract PrivateTransferContract {
                 leafCount,
                 index
             );
-    }
-
-    /// Utility function to efficiently change the endianess of its input (zkVerify groth16
-    /// pallet uses big-endian encoding of public inputs, but EVM uses little-endian encoding).
-    function _changeEndianess(uint256 input) internal pure returns (uint256 v) {
-        v = input;
-        // swap bytes
-        v =
-            ((v &
-                0xFF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00) >>
-                8) |
-            ((v &
-                0x00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF) <<
-                8);
-        // swap 2-byte long pairs
-        v =
-            ((v &
-                0xFFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000) >>
-                16) |
-            ((v &
-                0x0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF) <<
-                16);
-        // swap 4-byte long pairs
-        v =
-            ((v &
-                0xFFFFFFFF00000000FFFFFFFF00000000FFFFFFFF00000000FFFFFFFF00000000) >>
-                32) |
-            ((v &
-                0x00000000FFFFFFFF00000000FFFFFFFF00000000FFFFFFFF00000000FFFFFFFF) <<
-                32);
-        // swap 8-byte long pairs
-        v =
-            ((v &
-                0xFFFFFFFFFFFFFFFF0000000000000000FFFFFFFFFFFFFFFF0000000000000000) >>
-                64) |
-            ((v &
-                0x0000000000000000FFFFFFFFFFFFFFFF0000000000000000FFFFFFFFFFFFFFFF) <<
-                64);
-        // swap 16-byte long pairs
-        v = (v >> 128) | (v << 128);
     }
 }

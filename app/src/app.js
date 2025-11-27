@@ -153,7 +153,7 @@ class PrivateTransferManager {
           console.log(jobStatusResponse.data);
 
           // Transfer private
-          console.log("Waiting for aggregation to be finalized on-chain...");
+          console.log("Waiting for aggregation on other chain...");
           await new Promise((resolve) => setTimeout(resolve, 40000)); // wait 40s
           console.log("🚀 Executing private transfer...");
           const tx = await this.contract.privateTransfer(

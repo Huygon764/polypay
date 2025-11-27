@@ -94,18 +94,23 @@ On-chain observers see:
 
 The repository is organized into three main directories:
 
-- `app`: Contains the Node.js application that serves as the frontend and handles proof generation
-- `circuit`: Contains the zk-SNARK circuit written in Circom for proving commitment ownership
-- `contracts`: Contains the Solidity smart contracts managed with Foundry
+- **`app/`**: Node.js application that serves as the frontend interface and handles zero-knowledge proof generation
+- **`generate_proof/`**: Noir circuits for generating proofs of commitment ownership
+- **`contracts/`**: Solidity smart contracts for the privacy pool, managed with Foundry framework
 
 ## Prerequisites
 
-Before you begin, ensure you have the following installed:
+Before you begin, ensure you have the following tools installed:
 
--   [Node.js](https://nodejs.org/en/)
--   [Foundry](https://getfoundry.sh/)
--   [Circom](https://docs.circom.io/getting-started/installation/)
--   [snarkjs](https://github.com/iden3/snarkjs)
+- **[Node.js](https://nodejs.org/en/)**: JavaScript runtime environment
+- **[Foundry](https://getfoundry.sh/)**: Ethereum development toolkit for smart contracts
+- **[Noirup](https://noir-lang.org/docs/getting_started/quick_start)**: Noir toolchain installer
+  
+  **Important**: You must use version `1.0.0-beta.12` specifically:
+  ```bash
+  noirup -v 1.0.0-beta.12
+  ```
+  Newer versions will not work with the current circuit implementation.
 
 ## Development Setup
 
@@ -123,37 +128,48 @@ npm install
 cd ..
 ```
 
-#### 2. Compile Circuit
+#### 2. Compile the Circuit
 
 ```bash
-cd circuit/
-make
+cd generate_proof/
+nargo compile
 ```
 
-This command will:
-1. Compile the `circuit.circom` file
-2. Perform a local trusted setup (for demonstration purposes, do not use in production)
-3. Generate the proving key (`circuit_final.zkey`), verification key (`verification_key.json`), and WebAssembly version of the circuit (`circuit.wasm`)
-4. Place the generated files in the `setup` directory
+This will generate `target/generate_proof.json`, which the application uses during proof generation.
 
 #### 3. Environment Configuration
 
-Create `.env.secret` file in `app/` directory with your private keys and zkVerify credentials.
-
-#### 4. Generate Verification Key Hash
+Navigate to the `app/` directory and set up your environment:
 
 ```bash
-cd app/
-node ./src/get_vkhash.js
+cd app
+cp .env.template .env
 ```
 
-This requires `.env.secret` to be properly configured.
+Edit the `.env` file and configure the following variables:
+
+- **RELAYER_API_KEY**: Get your API key from the appropriate relayer service:
+  - For Testnet: Visit [https://relayer-testnet.horizenlabs.io/](https://relayer-testnet.horizenlabs.io/)
+  - For Mainnet: Visit [https://relayer.horizenlabs.io/](https://relayer.horizenlabs.io/)
+- **ETH_SECRET_KEY**: Your Ethereum private key
+
+#### 4. Register Verification Key Hash
+
+From the `app/` directory, register the verification key:
+
+```bash
+npm run registerVK
+```
+
+**Note**: This step requires your `.env` file to be properly configured. The command will register the verification key and output a `vkHash` value.
 
 #### 5. Update Contract Environment
 
-Copy the generated vkHash to `.env` file in `contracts/` directory.
+Copy the generated `vkHash` to the `.env` file in the `contracts/` directory.
 
 #### 6. Deploy Smart Contract
+
+Navigate to the contracts directory and deploy the smart contract:
 
 ```bash
 cd contracts
@@ -163,28 +179,34 @@ forge script script/PrivateTransferContract.s.sol:ZkvVerifierContractScript \
   --broadcast
 ```
 
+**Important**: Replace `YOUR_PRIVATE_KEY` with your actual private key.
+
 #### 7. Update App Configuration
 
-- Save the deployed contract address to `.env` in `app/` directory
+Complete the configuration by updating these values:
+
+- Save the deployed contract address to the `.env` file in the `app/` directory
 - Update the relayer private key in `app.js`:
 
 ```javascript
 this.relayerWallet = new ethers.Wallet(
-  "YOUR_PRIVATE_KEY", // relayer private key (change this to something for your own use)
+  "YOUR_PRIVATE_KEY", // Replace with your relayer private key
   provider
 );
 ```
 
 #### 8. Run the Application
 
+Start the application:
+
 ```bash
-cd app/
-node ./src/app.js
+cd app
+npm run start
 ```
 
 ## End-to-End User Workflow
 
-1. **Generate a Proof**: The user interacts with the DApp. The DApp uses the compiled circuit (`circuit.wasm`) and proving key (`circuit_final.zkey`) to generate a proof based on the user's commitment
+1. **Generate a Proof**: The user interacts with the app, which uses the compiled Noir circuit and proving artifacts to generate a zero-knowledge proof.
 2. **Submit Proof to zkVerify**: The DApp sends the generated proof and public inputs to zkVerify for verification
 3. **Receive Proof ID**: zkVerify verifies the proof and returns proof
 4. **Execute Private Transfer**: The relayer calls the smart contract with the proof, enabling anonymous transfer from pool to recipient
